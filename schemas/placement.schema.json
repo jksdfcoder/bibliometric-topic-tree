@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:atlas:placement:v1",
+  "title": "Atlas paper placement v1",
+  "type": "object",
+  "required": [
+    "work_id",
+    "status",
+    "primary_topic",
+    "secondary_topics",
+    "publication_date",
+    "topic_support_status",
+    "neighbors",
+    "evidence",
+    "missing_fields",
+    "method_version",
+    "source_version",
+    "reasons"
+  ],
+  "properties": {
+    "work_id": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "assigned",
+        "multiple_associations",
+        "observe",
+        "refused"
+      ]
+    },
+    "primary_topic": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "secondary_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "publication_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "topic_support_status": {
+      "enum": [
+        "provisional",
+        "versioned",
+        "unavailable"
+      ]
+    },
+    "neighbors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "work_id",
+          "channel",
+          "raw_score",
+          "rank"
+        ]
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "provenance",
+          "missing_state"
+        ]
+      }
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "method_version": {
+      "type": "string"
+    },
+    "source_version": {
+      "type": "string"
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

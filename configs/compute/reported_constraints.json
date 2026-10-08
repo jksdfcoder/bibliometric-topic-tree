@@ -1,0 +1,42 @@
+{
+  "evidence_status": "user_reported_not_independently_verified",
+  "reported_on": "2026-10-08",
+  "access_host_role": "not_confirmed",
+  "current_service": "vllm-fn",
+  "devices": {
+    "head": {
+      "unified_memory_gb_reported": 121,
+      "free_memory_gb_reported": 6,
+      "free_disk_tb_reported": 2.2,
+      "gpu_clock_mhz_reported": 611,
+      "gpu_clock_max_mhz_reported": 3003
+    },
+    "worker": {
+      "unified_memory_gb_reported": 121,
+      "free_memory_gb_reported": 8,
+      "free_disk_tb_reported": 2.4,
+      "gpu_clock_mhz_reported": 2398,
+      "ssh_address": null
+    }
+  },
+  "atlas_current_phase": "read_only_extraction_and_no_training_baselines",
+  "automatic_service_shutdown": false,
+  "measured_encoder_throughput": null,
+  "training_scope_if_baselines_justify_it": {
+    "single_device_preference": "worker",
+    "reported_full_parameter_recipe": "Llama 3.2 3B, sequence 2048; not a universal parameter-count guarantee",
+    "reported_single_worker_candidates": [
+      "Llama 3.1 8B LoRA, sequence 2048, per-device batch 4",
+      "approximately 32B bf16 LoRA with gradient checkpointing",
+      "Llama 3.3 70B QLoRA 4-bit; sequence and batch subject to measurement"
+    ],
+    "reported_dual_device_candidate": "70B bf16 LoRA with FSDP; streaming/sharded loading required to avoid full rank-0 copy",
+    "excluded_from_current_scope": [
+      "70B full-parameter fine-tuning",
+      "Flash Next / very large MoE training"
+    ],
+    "recipes_validated_in_this_project": false,
+    "two_device_memory_is_not_one_pool": true,
+    "step_time_requires_measurement_not_linear_clock_scaling": true
+  }
+}

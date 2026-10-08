@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:atlas:run-manifest:v1",
+  "title": "Atlas run manifest v1",
+  "type": "object",
+  "required": [
+    "run_id",
+    "status",
+    "stage",
+    "code",
+    "data",
+    "config",
+    "models",
+    "resources",
+    "outputs",
+    "limitations"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "running",
+        "completed",
+        "failed",
+        "blocked"
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "code": {
+      "type": "object",
+      "required": [
+        "commit",
+        "content_hash"
+      ],
+      "properties": {
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "content_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "source_version",
+        "input_manifest_hash"
+      ],
+      "properties": {
+        "source_version": {
+          "type": "string"
+        },
+        "input_manifest_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "hash",
+        "resolved"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "resolved": {
+          "type": "object"
+        }
+      }
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "resources": {
+      "type": "object"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "hash"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

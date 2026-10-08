@@ -1,0 +1,12 @@
+{
+  "start_date": "2021-10-08",
+  "end_date": "2026-10-08",
+  "seed": 42,
+  "pilot_per_stratum": 20,
+  "core_terms": ["bibliometric", "scientometric", "informetric", "science of science", "文献计量", "科学计量", "信息计量"],
+  "adjacent_terms": ["research evaluation", "research assessment", "citation analysis", "citation network", "science mapping", "科研评价", "科学评价", "引文分析"],
+  "candidate_sources": ["Scientometrics", "Journal of Informetrics", "Quantitative Science Studies", "Research Evaluation"],
+  "scope_status": "candidate_only_requires_human_review",
+  "date_semantics": "publication date inclusive; discovery date never substitutes",
+  "model_input": ["title", "abstract"]
+}

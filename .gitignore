@@ -1,0 +1,41 @@
+# Local access and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*
+# Runtime / packages
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+.nuxt/
+.output/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+.worktrees/
+# Data and model outputs (synthetic JSON fixtures are allowed)
+/artifacts/*
+!/artifacts/README.md
+/annotation/private/
+/data/
+/models/
+*.parquet
+*.arrow
+*.npy
+*.npz
+*.safetensors
+*.pt
+*.pth
+*.sqlite
+*.sqlite3
+*.jsonl
+*.jsonl.gz
+*.log
