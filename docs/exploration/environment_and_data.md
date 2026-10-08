@@ -1,5 +1,28 @@
 # 环境、数据与采集审查 — 2026-10-08
 
+## P01 实测更新（本会话，审计机）
+
+本节是这次只读探查的测量。下面原有章节仍是先前审查和用户报告，不是本会话重新登录湖机或 Spark 的结果。
+
+命令（工作树 `impl/P01-environment-source-audit`，退出码 2）：
+
+```sh
+python3 scripts/probe_source.py --root /opt/openalex --output artifacts/source-audit-001
+```
+
+实测：本机不存在 `/opt/openalex`。探针抛出 `FileNotFoundError: Input unavailable: /opt/openalex. No fallback download is performed.`，没有下载或重爬语料。`artifacts/source-audit-001/`（不入 Git）里：
+
+- `inventory.json`：`measured: false`，`tables`、`schema_samples`、`coverage`、`rows`、`source_version` 均为 null。没有行数、schema 样本或覆盖率。
+- `source_manifest.json`：`status: blocked`，`stage: source_audit`，`normalized_references_allowed: false`，`data.source_version: "unverified"` 且 `source_version_fixed: false`。这里的 `unverified` 只是运行合同要求的占位字符串，不是 snapshot 标识。
+- `missing_inputs`：`readable_lake_root`、`snapshot_or_conversion_manifest`、`reference_set_semantics`、`deletion_semantics`、`empty_side_table_semantics`。
+- 探针当时的 `code.commit` 是 `536f584e32cda3f7c7d7c3fa796183a110f72060`（探查发生时的 HEAD，审计提交尚未产生）。`code.content_hash` 是 `src/atlas/data/inventory.py` 的 SHA256 `02fbaedd7197445abbb6fe8ec7fdc64b30f07939f3232612c228958f664b686c`。
+
+审计机测量（Darwin 25.5.0，arm64，macOS 26.5.2，Python 3.9.6）：pyarrow 可发现；duckdb、torch、transformers、sentence_transformers 不可发现。`nvidia-smi` 不在 PATH。`hw.memsize` 为 68719476736 字节（64 GiB），`hw.ncpu` 为 16；根卷约 1.8 TiB，可用约 1.1 TiB。进程表里没有 vllm。这些数字只描述跑探针的这台 Mac。`spark_confirmed: false`，`lake_host_role: unverified`，`step_time_seconds: null`，没有用时钟比例换算步时，也没有停服务、改频率或加载模型。
+
+未在本会话重新打开的事项：采集仓库 commit `976050d2d2aef2997864979c4518661487ef2563` 及其入口仍只来自下方历史审查；Spark 双机内存、时钟、vllm-fn 和地址角色仍只来自 `configs/compute/reported_constraints.json` 的用户报告。没有把这台 arm64 审计机或历史文档里的 x86 湖机当成 Spark。
+
+P03 不得依据这次运行做来源引用规范化连接。字段字典见 `source_dictionary.md`。
+
 ## 已验证范围
 
 主仓库 `<existing-monitor-repository>`，commit `976050d2d2aef2997864979c4518661487ef2563`，工作树审查时干净。其余五个同名前缀目录是同一仓库的 git worktree，不是五个平台。重点读取实际 exporter、loader、flatten、Prisma schema、API client、sync service 和状态函数，未据 README 宣称在线功能已成功。
