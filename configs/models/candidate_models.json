@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "audited_on": "2026-10-08",
+  "audit_device": "Apple M4 Max, arm64, macOS 26.5.2, Python 3.9.6",
+  "project_license": null,
+  "weights_downloaded": false,
+  "selected_multilingual_candidate": "multilingual-e5-small",
+  "models": [
+    {
+      "id": "specter2-base",
+      "role": "scientific_document_encoder",
+      "repository_url": "https://huggingface.co/allenai/specter2_base",
+      "code_repository": "https://github.com/allenai/SPECTER2",
+      "code_commit": "fac1cb0940fe7bd3c0db00973f6889ca0b481b63",
+      "revision": "3447645e1def9117997203454fa4495937bfbd83",
+      "adapter_revision": null,
+      "adapter_config_name": null,
+      "architecture": {
+        "model_type": "bert",
+        "architectures": ["BertModel"],
+        "hidden_size": 768,
+        "max_position_embeddings": 512,
+        "vocab_size": 31090,
+        "num_hidden_layers": 12
+      },
+      "tokenizer": {
+        "class": "BertTokenizer",
+        "do_lower_case": true,
+        "sep_token": "[SEP]",
+        "cls_token": "[CLS]",
+        "model_max_length_in_tokenizer_config": "1000000000000000019884624838656",
+        "call_site_max_length": 512
+      },
+      "input": {
+        "fields": ["title", "abstract"],
+        "construction": "title + sep_token + abstract when abstract is present, otherwise title",
+        "source": "specter2_0/timo/interface.py Predictor.predict_one",
+        "pooling": "last_hidden_state[:, 0, :]"
+      },
+      "weight": {
+        "file": "pytorch_model.bin",
+        "bytes": 439740465,
+        "downloaded": false
+      },
+      "license_file": null,
+      "license_note": "No LICENSE file in the Hub listing. Do not treat a missing file as Apache-2.0. Do not distribute the checkpoint.",
+      "training_provenance": "SPECTER2 README at fac1cb0940fe7bd3c0db00973f6889ca0b481b63 describes citation-triplet base training. Not reproduced. Dataset licenses were not opened.",
+      "decision": "candidate"
+    },
+    {
+      "id": "specter2-proximity",
+      "role": "paper_proximity_adapter",
+      "repository_url": "https://huggingface.co/allenai/specter2",
+      "alias_repository_url": "https://huggingface.co/allenai/specter2_proximity",
+      "alias_same_revision": true,
+      "revision": "2081559630a80fc5851d8f798a05ba81e9468089",
+      "base_revision": "3447645e1def9117997203454fa4495937bfbd83",
+      "adapter_config_name": "[PRX]",
+      "adapter_model_name": "allenai/specter_plus_plus",
+      "adapter_library_version_in_config": "3.1.0",
+      "hidden_size": 768,
+      "load_as_required": "proximity",
+      "input": {
+        "construction": "same title/abstract concatenation as the base",
+        "max_length": 512,
+        "pooling": "CLS"
+      },
+      "weight": {
+        "file": "pytorch_adapter.bin",
+        "bytes": 3593365,
+        "downloaded": false
+      },
+      "license_file": null,
+      "license_note": "Model card says License: Apache 2.0. No LICENSE file was in the Hub listing. Card also says bert-base-uncased and finetuned from allenai/scibert_scivocab_uncased; base vocab_size is 31090. Unverified. Do not distribute.",
+      "training_provenance": "Code README describes SciRepEval adapter training after the base. Not reproduced.",
+      "decision": "candidate"
+    },
+    {
+      "id": "specter2-adhoc-query",
+      "role": "short_query_adapter",
+      "repository_url": "https://huggingface.co/allenai/specter2_adhoc_query",
+      "revision": "3f4448817028388648a74349ece07af4518ec5bd",
+      "base_revision": "3447645e1def9117997203454fa4495937bfbd83",
+      "adapter_config_name": "[QRY]",
+      "adapter_model_name": "allenai/specter_plus_plus",
+      "load_as_required": "adhoc_query",
+      "input": {
+        "construction": "short query text, not a paper title/abstract pair",
+        "max_length": 512,
+        "pooling": "CLS",
+        "candidate_papers": "encode with the proximity adapter, not this one"
+      },
+      "weight": {
+        "file": "pytorch_adapter.bin",
+        "bytes": 3593365,
+        "downloaded": false
+      },
+      "license_file": null,
+      "license_note": "No LICENSE file in the Hub listing. Do not distribute.",
+      "training_provenance": "Described as the adhoc-query adapter in the code README. Not loaded.",
+      "decision": "candidate"
+    },
+    {
+      "id": "multilingual-e5-small",
+      "role": "multilingual_query_document_encoder",
+      "repository_url": "https://huggingface.co/intfloat/multilingual-e5-small",
+      "revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "architecture": {
+        "model_type": "bert",
+        "architectures": ["BertModel"],
+        "hidden_size": 384,
+        "max_position_embeddings": 512,
+        "vocab_size": 250037,
+        "num_hidden_layers": 12
+      },
+      "tokenizer": {
+        "class": "XLMRobertaTokenizer",
+        "do_lower_case": false,
+        "model_max_length": 512
+      },
+      "modules": ["sentence_transformers.models.Transformer", "sentence_transformers.models.Pooling", "sentence_transformers.models.Normalize"],
+      "pooling": {
+        "mean_tokens": true,
+        "cls_token": false
+      },
+      "input": {
+        "query_prefix_claimed_in_model_card": "query: ",
+        "passage_prefix_claimed_in_model_card": "passage: ",
+        "prefix_executed": false,
+        "chinese_example_in_model_card": "query: 南瓜的家常做法",
+        "chinese_retrieval_executed": false
+      },
+      "weight": {
+        "file": "model.safetensors",
+        "bytes": 470641600,
+        "downloaded": false
+      },
+      "license_file": null,
+      "license_note": "Model card yaml says license: mit. No LICENSE file was in the Hub listing. Do not treat that yaml as MIT and do not distribute the checkpoint.",
+      "training_provenance": "Model card says initialization from microsoft/Multilingual-MiniLM-L12-H384; weak supervision including filtered mC4, CC News, NLLB, Wikipedia, Reddit, S2ORC title/abstract and citation pairs; supervised fine-tuning including MS MARCO and Chinese DuReader Retrieval (86k pairs). Paper linked from the card: https://arxiv.org/pdf/2402.05672. Dataset licenses were not opened. Not reproduced.",
+      "why_selected": "Smaller embedding encoder than bge-m3, with an explicit query/passage card convention and a Chinese supervised row. Not loaded, so it stays a candidate.",
+      "decision": "candidate"
+    },
+    {
+      "id": "bge-m3",
+      "role": "not_selected_multilingual_encoder",
+      "repository_url": "https://huggingface.co/BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "architecture": {
+        "model_type": "xlm-roberta",
+        "hidden_size": 1024,
+        "max_position_embeddings": 8194,
+        "num_hidden_layers": 24
+      },
+      "weight": {
+        "file": "pytorch_model.bin",
+        "bytes": 2271145830,
+        "downloaded": false
+      },
+      "license_file": null,
+      "decision": "reject",
+      "why_not_selected": "About 4.8 times the E5-small weight file and not loaded. It is an embedding model, not a generative LoRA. Revisit only if E5-small fails a measured Chinese retrieval pilot and memory is measured."
+    },
+    {
+      "id": "paraphrase-multilingual-minilm",
+      "role": "not_selected_multilingual_encoder",
+      "repository_url": "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "modules": ["sentence_transformers.models.Transformer", "sentence_transformers.models.Pooling"],
+      "weight": {
+        "file": "model.safetensors",
+        "bytes": 470641600,
+        "downloaded": false
+      },
+      "license_file": null,
+      "decision": "reject",
+      "why_not_selected": "Same safetensors size class as E5-small. Config files that were read have pooling and no normalize module and no query/passage prefix. Not loaded."
+    },
+    {
+      "id": "specter2-aug2023refresh",
+      "role": "not_selected_scientific_refresh",
+      "repository_url": "https://huggingface.co/allenai/specter2_aug2023refresh",
+      "revision": "fb592d9375e91b996957c81824b30d32250c1a72",
+      "license_file": null,
+      "decision": "reject",
+      "why_not_selected": "Not the base named by the current load path. Config was not read beyond the Hub file list. Not downloaded."
+    }
+  ]
+}
