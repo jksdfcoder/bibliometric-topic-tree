@@ -1,0 +1,25 @@
+{
+  "root_env": "ATLAS_LAKE_ROOT",
+  "default_root": "/opt/openalex",
+  "download_on_missing": false,
+  "source_version": null,
+  "source_version_policy": "Fix source_version only from one root-level snapshot or conversion manifest after partition role, reference-set, deletion, and empty-side-table semantics are stated and every works and works_referenced_works row has been read without a timestamp conflict. Partition directory dates are candidates, not snapshot dates.",
+  "recognized_manifest_filenames": [
+    "snapshot_manifest.json",
+    "conversion_manifest.json",
+    "source_snapshot.json"
+  ],
+  "sample_rows_per_file": 32,
+  "tables_always_reported": [
+    "works",
+    "works_referenced_works",
+    "works_authorships",
+    "works_authorships_affiliations",
+    "works_authorships_institutions",
+    "sources"
+  ],
+  "author_entity_policy": "Quarantine authors* tables. Do not read their values or fill raw names and affiliations.",
+  "reference_normalization": "blocked_until_side_table_semantics_proven",
+  "coverage_policy": "null until a value scan is actually run; column-statistic availability is not a coverage rate",
+  "empty_side_table_policy": "A missing side table or a zero-row file is unknown_no_rows, not reported_empty."
+}
