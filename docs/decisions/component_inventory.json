@@ -1,0 +1,727 @@
+{
+  "schema_version": 1,
+  "audited_on": "2026-10-08",
+  "audit_device": "Apple M4 Max, arm64, macOS 26.5.2, 64 GB RAM, Python 3.9.6, Node v24.15.0",
+  "spark_measured": false,
+  "project_license": null,
+  "components": [
+    {
+      "id": "specter2",
+      "name": "SPECTER2 code",
+      "repository_url": "https://github.com/allenai/SPECTER2",
+      "commit": "fac1cb0940fe7bd3c0db00973f6889ca0b481b63",
+      "entry_points": [
+        "specter2_0/timo/interface.py:Predictor._load_model",
+        "specter2_0/timo/interface.py:Predictor.encode_batch",
+        "specter2_0/timo/interface.py:Predictor.predict_one"
+      ],
+      "license_paths": ["LICENSE.md"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": "README at this commit describes citation-triplet pretraining and SciRepEval adapters. Not reproduced.",
+      "verified_functions": [],
+      "gaps": [
+        "specter2_0/model.py is a stub.",
+        "interface.py imports AutoAdapterModel from transformers; the README imports it from adapters. Neither import was executed.",
+        "requires-python >=3.8,<3.11 and pins an old Torch. import torch failed on this machine.",
+        "Spark was not measured."
+      ],
+      "minimal_changes": [
+        "Call adapters.AutoAdapterModel explicitly and set load_as to the active adapter name before any encoding task."
+      ],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import torch'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'torch'",
+        "network_required": false,
+        "observed": "Source and LICENSE.md were read. Weights were not downloaded."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "specter2-base",
+      "name": "SPECTER2 base checkpoint",
+      "repository_url": "https://huggingface.co/allenai/specter2_base",
+      "commit": "3447645e1def9117997203454fa4495937bfbd83",
+      "entry_points": ["config.json", "tokenizer_config.json", "pytorch_model.bin"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "3447645e1def9117997203454fa4495937bfbd83",
+      "training_provenance": "Code README claims citation-triplet training. Model card was not a license file. Dataset licenses were not opened.",
+      "verified_functions": [],
+      "gaps": [
+        "No LICENSE file in the Hub file list. A card claim is not treated as Apache-2.0.",
+        "tokenizer_config model_max_length is 1000000000000000019884624838656. config max_position_embeddings is 512. Use the call-site max_len of 512.",
+        "hidden_size 768, vocab_size 31090, BertModel, do_lower_case true. Not a Chinese encoder.",
+        "pytorch_model.bin is 439740465 bytes and was not downloaded."
+      ],
+      "minimal_changes": [
+        "Load with adapters.AutoAdapterModel.from_pretrained('allenai/specter2_base') only after a license file or an explicit maintainer acceptance."
+      ],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "HEAD https://huggingface.co/allenai/specter2_base/resolve/main/pytorch_model.bin",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Load not run: Torch is absent and the weight file is 439740465 bytes. Large weights were not downloaded.",
+        "network_required": true,
+        "observed": "HEAD returned Content-Length 439740465. config.json and tokenizer_config.json were downloaded."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "specter2-proximity",
+      "name": "SPECTER2 proximity adapter",
+      "repository_url": "https://huggingface.co/allenai/specter2",
+      "commit": "2081559630a80fc5851d8f798a05ba81e9468089",
+      "entry_points": ["adapter_config.json", "pytorch_adapter.bin"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "2081559630a80fc5851d8f798a05ba81e9468089",
+      "training_provenance": "Model card says finetuned from allenai/scibert_scivocab_uncased and also says bert-base-uncased. Those phrases disagree with base vocab_size 31090. Not reproduced.",
+      "verified_functions": [],
+      "gaps": [
+        "allenai/specter2_proximity resolves to this same revision and the adapter_config.json bytes match.",
+        "adapter_config name is [PRX], model_name is allenai/specter_plus_plus, hidden_size 768. Code activation string proximity is a load_as override, not this name.",
+        "No LICENSE file. README line 'License: Apache 2.0' is not a license file.",
+        "pytorch_adapter.bin is 3593365 bytes and was not downloaded."
+      ],
+      "minimal_changes": [
+        "load_adapter(..., source='hf', load_as='proximity') and record the active name. Encode title and abstract with sep_token, max_length 512, CLS pooling."
+      ],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "HEAD https://huggingface.co/allenai/specter2/resolve/main/pytorch_adapter.bin",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Adapter weights were not loaded. Torch is not installed.",
+        "network_required": true,
+        "observed": "HEAD Content-Length 3593365. adapter_config.json downloaded."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "specter2-adhoc-query",
+      "name": "SPECTER2 adhoc query adapter",
+      "repository_url": "https://huggingface.co/allenai/specter2_adhoc_query",
+      "commit": "3f4448817028388648a74349ece07af4518ec5bd",
+      "entry_points": ["adapter_config.json", "pytorch_adapter.bin"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "3f4448817028388648a74349ece07af4518ec5bd",
+      "training_provenance": "Same SciRepEval adapter family stated in the code README. Not reproduced. No dataset license opened.",
+      "verified_functions": [],
+      "gaps": [
+        "adapter_config name is [QRY], not adhoc_query.",
+        "No LICENSE file in the Hub file list.",
+        "Short-query behavior was not loaded. Do not feed a short query through the proximity adapter.",
+        "pytorch_adapter.bin is 3593365 bytes and was not downloaded."
+      ],
+      "minimal_changes": [
+        "Encode queries with load_as set explicitly. Encode candidate papers with the proximity adapter. Do not mix the two vectors."
+      ],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "HEAD https://huggingface.co/allenai/specter2_adhoc_query/resolve/main/pytorch_adapter.bin",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Adapter weights were not loaded. Torch is not installed.",
+        "network_required": true,
+        "observed": "HEAD Content-Length 3593365. adapter_config.json downloaded."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "adapters",
+      "name": "adapter-transformers",
+      "repository_url": "https://github.com/adapter-hub/adapters",
+      "commit": "53a1ea164c07498be7d522aed96c9e600aa3b38b",
+      "entry_points": ["src/adapters/models/auto/adapter_model.py:AutoAdapterModel"],
+      "license_paths": ["LICENSE"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "import adapters failed. from_pretrained was not executed.",
+        "SPECTER2 interface.py does not import this package."
+      ],
+      "minimal_changes": ["Install only when a checkpoint load is actually attempted."],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import adapters'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'adapters'",
+        "network_required": false,
+        "observed": "LICENSE and AutoAdapterModel class line were read at this commit."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "multilingual-e5-small",
+      "name": "multilingual-e5-small",
+      "repository_url": "https://huggingface.co/intfloat/multilingual-e5-small",
+      "commit": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "entry_points": ["config.json", "tokenizer_config.json", "modules.json", "1_Pooling/config.json", "model.safetensors"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "training_provenance": "Model card says initialized from microsoft/Multilingual-MiniLM-L12-H384, weak supervision including S2ORC, and supervised pairs including MS MARCO and Chinese DuReader Retrieval. Dataset licenses were not opened.",
+      "verified_functions": [],
+      "gaps": [
+        "No LICENSE file. Card yaml says license mit. That is not treated as MIT.",
+        "Mean pooling plus L2 normalize, hidden 384, max length 512, XLMRobertaTokenizer, do_lower_case false.",
+        "query:/passage: prefixes and the Chinese example are model-card text. No query was encoded.",
+        "model.safetensors is 470641600 bytes and was not downloaded.",
+        "import sentence_transformers failed."
+      ],
+      "minimal_changes": [
+        "Prefix queries with 'query: ' and documents with 'passage: ' only after a real load confirms the card. Keep this encoder off the SPECTER2 paper adapter."
+      ],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "python3 -c 'import sentence_transformers'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'sentence_transformers'. Weight file was not downloaded.",
+        "network_required": true,
+        "observed": "HEAD Content-Length of model.safetensors was 470641600. Small config files were downloaded."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "bge-m3",
+      "name": "bge-m3",
+      "repository_url": "https://huggingface.co/BAAI/bge-m3",
+      "commit": "5617a9f61b028005a4858fdac845db406aefb181",
+      "entry_points": ["config.json", "pytorch_model.bin"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "training_provenance": "Not established. Card license yaml was not treated as a license file.",
+      "verified_functions": [],
+      "gaps": [
+        "24-layer XLM-RoBERTa, hidden size 1024, max_position_embeddings 8194.",
+        "pytorch_model.bin is 2271145830 bytes. Not downloaded. Not a generative LoRA."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/pytorch_model.bin",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Not loaded. Weight is 2271145830 bytes. multilingual-e5-small is the selected smaller candidate.",
+        "network_required": true,
+        "observed": "HEAD Content-Length 2271145830. config.json downloaded."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "paraphrase-multilingual-minilm",
+      "name": "paraphrase-multilingual-MiniLM-L12-v2",
+      "repository_url": "https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "commit": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "entry_points": ["config.json", "tokenizer_config.json", "modules.json"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "training_provenance": "Not established. No LICENSE file in the Hub listing.",
+      "verified_functions": [],
+      "gaps": [
+        "modules.json has a Transformer and a Pooling module and no Normalize module.",
+        "No query/passage prefix in the config files that were read.",
+        "model.safetensors is 470641600 bytes and was not downloaded."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "HEAD https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/model.safetensors",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Not loaded. multilingual-e5-small is the selected multilingual candidate.",
+        "network_required": true,
+        "observed": "HEAD Content-Length 470641600. config.json, tokenizer_config.json, and modules.json were downloaded."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "specter2-aug2023refresh",
+      "name": "SPECTER2 aug2023refresh",
+      "repository_url": "https://huggingface.co/allenai/specter2_aug2023refresh",
+      "commit": "fb592d9375e91b996957c81824b30d32250c1a72",
+      "entry_points": ["adapter_config.json", "pytorch_adapter.bin"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": "fb592d9375e91b996957c81824b30d32250c1a72",
+      "training_provenance": "Not read. The code README says benchmarking should keep using the current base.",
+      "verified_functions": [],
+      "gaps": ["Not the base named by the current load path. Adapter config body was not downloaded. No LICENSE file was in the file list."],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "https://huggingface.co/api/models/allenai/specter2_aug2023refresh",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Not loaded and not selected.",
+        "network_required": true,
+        "observed": "Hub file list has README.md, adapter_config.json, and pytorch_adapter.bin. No LICENSE file."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "bertopic",
+      "name": "BERTopic representation and hierarchy modules",
+      "repository_url": "https://github.com/MaartenGr/BERTopic",
+      "commit": "9036123c97aaa9a6cc4bec4a6db1a7caf9209df6",
+      "entry_points": [
+        "bertopic/vectorizers/_ctfidf.py:ClassTfidfTransformer",
+        "bertopic/representation/_base.py:BaseRepresentation.extract_topics",
+        "bertopic/representation/_keybert.py:KeyBERTInspired",
+        "bertopic/_bertopic.py:BERTopic.hierarchical_topics"
+      ],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "pyproject.toml version 0.17.4 requires Python >=3.10. This machine is 3.9.6.",
+        "hierarchical_topics is scipy linkage over c-TF-IDF or topic embeddings, not containment evidence and not a temporal link.",
+        "The rest of the package, including default UMAP/HDBSCAN fitting, is not pinned."
+      ],
+      "minimal_changes": [
+        "On Python >=3.10, import only the c-TF-IDF, representation, and hierarchical_topics entry points. Do not fork the repository."
+      ],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import bertopic'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'bertopic'. Package was not installed because it requires Python >=3.10 and a Torch stack.",
+        "network_required": false,
+        "observed": "Those four source files and LICENSE were read at this commit."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "bertrend",
+      "name": "BERTrend",
+      "repository_url": "https://github.com/rte-france/BERTrend",
+      "commit": "4f85cafc3b55f75ba49ac49807999fbbe42ca2aa",
+      "entry_points": [
+        "bertrend/BERTrend.py:BERTrend.get_periods",
+        "bertrend/BERTrend.py:BERTrend.merge_models_with",
+        "bertrend/BERTrend.py:_merge_models"
+      ],
+      "license_paths": ["LICENSE.md"],
+      "license_name": "MPL-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "Requires Python >=3.12 and installs Torch, BERTopic, and LLM/news dependencies.",
+        "Importing bertrend/__init__.py creates ~/.bertrend directories and may load a .env.",
+        "Time is a timestamp-keyed document group. Links are cosine merges of topic embeddings that sum counts. That is not an evidence-backed temporal link separate from containment."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "not imported",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Not imported. Python 3.9.6 is below the package requirement >=3.12, and import side effects create a home directory.",
+        "network_required": true,
+        "observed": "BERTrend.py, pyproject.toml, and LICENSE.md were read. The repository was not forked."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "g6",
+      "name": "@antv/g6",
+      "repository_url": "https://github.com/antvis/G6",
+      "commit": "54ece372b40aa8ecbf09add9e09544979a4be10f",
+      "entry_points": [
+        "packages/g6/src/registry/register.ts:register",
+        "packages/g6/src/layouts/base-layout.ts:BaseLayout.execute",
+        "packages/g6/src/runtime/graph.ts:collapseElement",
+        "packages/g6/src/runtime/graph.ts:focusElement",
+        "packages/g6/src/runtime/graph.ts:setElementVisibility",
+        "packages/g6/src/runtime/graph.ts:getElementVisibility"
+      ],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [
+        "new Graph({ data: { nodes: [{ id: 'a' }] } })",
+        "register",
+        "BaseLayout",
+        "Graph.prototype.collapseElement",
+        "Graph.prototype.focusElement",
+        "Graph.prototype.setElementVisibility",
+        "Graph.prototype.getElementVisibility"
+      ],
+      "gaps": [
+        "Publication-time radius is not a built-in layout. RadialLayout from @antv/layout is not publication time.",
+        "Prototype methods were present. collapseElement, focusElement, and setElementVisibility were not called. No browser pixels were rendered.",
+        "packages/g6/src/index.ts points an icon font at at.alicdn.com. The data view must not depend on that CDN.",
+        "npm metadata for 5.1.1 has no gitHead. The pin is this commit, whose packages/g6/package.json version is 5.1.1. The loaded package also reports 5.1.1.",
+        "Spark and a mobile viewport were not measured. Package directory size was 13 MB; the npm install also pulled a shared tree of 698 packages."
+      ],
+      "minimal_changes": [
+        "P12 registers register('layout', '<type>', class extends BaseLayout) and positions nodes by publication-time radius. Visibility uses setElementVisibility."
+      ],
+      "verification_evidence": {
+        "probe_status": "passed",
+        "command": "cd /tmp/p02-node && npm install --ignore-scripts @antv/g6@5.1.1 && node --input-type=module -e \"import * as g6 from '@antv/g6'; new g6.Graph({ data: { nodes: [{ id: 'a' }] } })\"",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
+        "failure": null,
+        "network_required": true,
+        "observed": "g6_pkg 5.1.1. Graph constructed. register and BaseLayout were functions. The six Graph methods above were functions on the prototype."
+      },
+      "decision": "adopt"
+    },
+    {
+      "id": "bm25s",
+      "name": "bm25s",
+      "repository_url": "https://github.com/xhluca/bm25s",
+      "commit": "cda938e95f7053b843ce3e3fe1678410be39095f",
+      "entry_points": [
+        "bm25s/__init__.py:BM25.index",
+        "bm25s/__init__.py:BM25.retrieve",
+        "bm25s/__init__.py:BM25.save",
+        "bm25s/__init__.py:BM25.load",
+        "bm25s/tokenization.py:tokenize"
+      ],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": ["BM25.index", "BM25.retrieve", "BM25.save", "BM25.load"],
+      "gaps": [
+        "Probe used three synthetic English sentences, stopwords disabled, method lucene. Scientific tokenization is unmeasured.",
+        "Wheel built from this commit reported version 0.3.13, which matches git describe --exact-match.",
+        "install_requires is numpy. Optional numba/scipy extras were not installed.",
+        "Spark was not measured. This is not an ANN index."
+      ],
+      "minimal_changes": [
+        "P06 calls tokenize, BM25(method='lucene'), save, and load under the run directory. Persist work ids in the saved corpus records."
+      ],
+      "verification_evidence": {
+        "probe_status": "passed",
+        "command": "/tmp/p02-py/bin/pip install --no-index --no-deps /tmp/p02-evidence/bm25s && /tmp/p02-py/bin/python bm25s_probe.py",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": null,
+        "network_required": false,
+        "observed": "Query 'citation science' ranked w1 then w0. Scores 0.580333 and 0.16899. Reload returned corpus id w1. Saved corpus.jsonl, corpus.mmindex.json, data.csc.index.npy, indices.csc.index.npy, indptr.csc.index.npy, params.index.json, vocab.index.json. Clone of the commit had used the network earlier; this load did not."
+      },
+      "decision": "adopt"
+    },
+    {
+      "id": "rank-bm25",
+      "name": "rank_bm25",
+      "repository_url": "https://github.com/dorianbrown/rank_bm25",
+      "commit": "47aa3ddf8dc1ebeb7ef4e65f2b4536af44594099",
+      "entry_points": ["rank_bm25.py:BM25Okapi.get_scores"],
+      "license_paths": ["LICENSE"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": ["BM25Okapi.get_scores"],
+      "gaps": [
+        "No save or load method. The index is an in-memory token list.",
+        "pip install of the shallow clone failed: setup.py calls git describe and the clone has no tags.",
+        "Scoring ran only through PYTHONPATH."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "/tmp/p02-py/bin/pip install --no-index --no-deps /tmp/p02-evidence/rank_bm25",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "fatal: No names found, cannot describe anything. Unable to get version number from git tags.",
+        "network_required": false,
+        "observed": "PYTHONPATH import of BM25Okapi.get_scores on the same three sentences returned 0.093921, 0.615313, 0.0. bm25s is the pinned index."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "faiss",
+      "name": "Faiss IndexFlatIP",
+      "repository_url": "https://github.com/facebookresearch/faiss",
+      "commit": "3c54e2efb891b1a317e69308097ba54122c3b033",
+      "entry_points": [
+        "faiss/IndexFlat.h:IndexFlatIP",
+        "faiss/index_io.h:write_index",
+        "faiss/index_io.h:read_index"
+      ],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": ["IndexFlatIP.add", "IndexFlatIP.search", "write_index", "read_index"],
+      "gaps": [
+        "Pinned behavior is exact inner product, not IVF or HNSW.",
+        "Probe used 3 synthetic 4-d float32 rows. No encoder output was indexed.",
+        "Wheel faiss_cpu-1.13.0-cp39-abi3-macosx_14_0_arm64 is 3.4 MB and requires NumPy. Installed NumPy is 2.0.2, commit 854252ded83e6b9c21c4ee80558d354d8a72484c, LICENSE.txt BSD-3-Clause. NumPy is a dependency, not a second index.",
+        "Spark was not measured. This tag is v1.13.0, not later main."
+      ],
+      "minimal_changes": [
+        "P07 writes an IndexFlatIP file plus a work_id order sidecar. Normalize vectors before add. Do not commit the index."
+      ],
+      "verification_evidence": {
+        "probe_status": "passed",
+        "command": "/tmp/p02-py/bin/pip install --only-binary=:all: faiss-cpu && /tmp/p02-py/bin/python -c 'import faiss'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": null,
+        "network_required": true,
+        "observed": "faiss 1.13.0. IndexFlatIP search top id 0, scores 1.0 and 0.800000011920929. write_index/read_index round-trip, file 93 bytes, ntotal 3."
+      },
+      "decision": "adopt"
+    },
+    {
+      "id": "hnswlib",
+      "name": "hnswlib",
+      "repository_url": "https://github.com/nmslib/hnswlib",
+      "commit": "ca426729609b3221563047ceb269cc1213e0d376",
+      "entry_points": [],
+      "license_paths": ["LICENSE"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": ["Approximate index. Not installed after IndexFlatIP succeeded. Python entry points were not opened."],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import hnswlib'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'hnswlib'. No wheel install was attempted.",
+        "network_required": false,
+        "observed": "LICENSE at this commit is Apache-2.0."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "usearch",
+      "name": "USearch",
+      "repository_url": "https://github.com/unum-cloud/usearch",
+      "commit": "1e8a19253138510f35ee2c68dc641e5b5c83c7b5",
+      "entry_points": [],
+      "license_paths": ["LICENSE"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": ["Approximate index. Not installed after IndexFlatIP succeeded. Python entry points were not opened."],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import usearch'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'usearch'. No wheel install was attempted.",
+        "network_required": false,
+        "observed": "LICENSE at this commit is Apache-2.0."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "pyserini",
+      "name": "Pyserini",
+      "repository_url": "https://github.com/castorini/pyserini",
+      "commit": "b875d19a6ba5bd5d228e269a5f9ece3934c79360",
+      "entry_points": [],
+      "license_paths": ["LICENSE.txt"],
+      "license_name": "Apache-2.0",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "JVM search platform. This machine has no Java runtime.",
+        "Python entry points were not opened. bm25s is the lexical pin."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "failed",
+        "command": "python3 -c 'import pyserini'; java -version",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "ModuleNotFoundError: No module named 'pyserini'. java: Unable to locate a Java Runtime.",
+        "network_required": false,
+        "observed": "LICENSE.txt at this commit is Apache-2.0. Not forked."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "litdb-jkitchin",
+      "name": "jkitchin/litdb",
+      "repository_url": "https://github.com/jkitchin/litdb",
+      "commit": "86fdc5987a7a8db43a76370503e7a62250483cc9",
+      "entry_points": ["src/litdb/db.py:get_db"],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "Version 2.2.1. Own libSQL file, F32_BLOB embeddings, and FTS5. Also sentence-transformers, LiteLLM, and an OpenAlex crawl.",
+        "Does not read the read-only lake contracts. Adapting it would replace storage and collection."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "not imported",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Python 3.9.6",
+        "failure": "Not installed. Dependencies include torch and would download model weights.",
+        "network_required": true,
+        "observed": "db.py schema and LICENSE were read. Repository was not forked. Env files in the clone were not opened."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "litdb-js",
+      "name": "litdb/litdb",
+      "repository_url": "https://github.com/litdb/litdb",
+      "commit": "c22af8de30ba51d3138653a71eae4be30e13f16a",
+      "entry_points": ["src/index.ts"],
+      "license_paths": ["LICENSE"],
+      "license_name": "BSD-3-Clause",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": ["Version 0.0.33. SQLite, MySQL, and PostgreSQL drivers. No bibliometric index and no lake adapter."],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "not installed",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
+        "failure": "Not loaded. A generic SQL driver does not serve the lake contracts.",
+        "network_required": true,
+        "observed": "src/index.ts, package.json, and LICENSE were read."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "vue",
+      "name": "Vue",
+      "repository_url": "https://github.com/vuejs/core",
+      "commit": "5be58b4c475c1d14b4abacbfeda610394a0ee4e5",
+      "entry_points": ["packages/vue/index.js"],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": ["createApp", "version"],
+      "gaps": [
+        "Tag v3.5.43. Nuxt 4.4.8 depends on vue ^3.5.35; this is the resolution that was loaded.",
+        "createApp was called on the published package. packages/vue/index.js at this tag only re-exports ./dist. The function body was not read. mount was not called.",
+        "Package directory was 2.5 MB. Spark was not measured."
+      ],
+      "minimal_changes": ["P12 imports Vue only through the pinned Nuxt version. Do not add a second UI framework."],
+      "verification_evidence": {
+        "probe_status": "passed",
+        "command": "cd /tmp/p02-node && npm install --ignore-scripts vue@3.5.43 && node --input-type=module -e \"import { createApp, version } from 'vue'; createApp({ name: 'probe' }); console.log(version)\"",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
+        "failure": null,
+        "network_required": true,
+        "observed": "version and package.json both 3.5.43. createApp returned an object with component and mount functions."
+      },
+      "decision": "adopt"
+    },
+    {
+      "id": "nuxt",
+      "name": "Nuxt",
+      "repository_url": "https://github.com/nuxt/nuxt",
+      "commit": "2bfc2c87a6f3bb9b17b4b6a2e9c117ef06b278d4",
+      "entry_points": ["packages/nuxt/package.json"],
+      "license_paths": ["LICENSE"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": ["import('nuxt')"],
+      "gaps": [
+        "Tag v4.4.8. packages/nuxt/package.json exports import ./dist/index.mjs. createNuxt and build were exported by the installed package and were not called. No listener was opened.",
+        "World Pub Monitor apps/web uses nuxt ^4.4.8. That application has no license file and is not imported.",
+        "Package directory was 1.5 MB. The combined npm install with Vue and G6 added 698 packages. Spark was not measured."
+      ],
+      "minimal_changes": [
+        "P12 creates a loopback Nuxt app in a later task. Do not deploy it publicly and do not copy the monitor app."
+      ],
+      "verification_evidence": {
+        "probe_status": "passed",
+        "command": "cd /tmp/p02-node && npm install --ignore-scripts nuxt@4.4.8 && node --input-type=module -e \"import('nuxt').then(m => console.log(Object.keys(m)))\"",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
+        "failure": null,
+        "network_required": true,
+        "observed": "package version 4.4.8. Import succeeded. Exported keys included build, createNuxt, and loadNuxt."
+      },
+      "decision": "adopt"
+    },
+    {
+      "id": "nuxt-ui",
+      "name": "@nuxt/ui",
+      "repository_url": "https://github.com/nuxt/ui",
+      "commit": "ada15803684c4a8eeced1a305d5d930484ccf82d",
+      "entry_points": [],
+      "license_paths": ["LICENSE.md"],
+      "license_name": "MIT",
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "npm version 4.10.0 matches World Pub Monitor's ^4.10.0 range. The package was not installed.",
+        "Source entry points inside src/ were not read."
+      ],
+      "minimal_changes": ["P12 may load it after an import probe. It is not part of this pin."],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "not installed",
+        "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
+        "failure": "Component kit was not loaded. License file was read; module entry points were not.",
+        "network_required": true,
+        "observed": "LICENSE.md at ada15803684c4a8eeced1a305d5d930484ccf82d is MIT. npm view reported version 4.10.0 and this gitHead."
+      },
+      "decision": "candidate"
+    },
+    {
+      "id": "world-pub-monitor",
+      "name": "World Pub Monitor application",
+      "repository_url": "https://github.com/jksdfcoder/World_Pub_Monitor_Openalex",
+      "commit": "976050d2d2aef2997864979c4518661487ef2563",
+      "entry_points": ["apps/web/package.json"],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": null,
+      "training_provenance": null,
+      "verified_functions": [],
+      "gaps": [
+        "git ls-files found no LICENSE, LICENCE, or COPYING file. private: true is not a license.",
+        "apps/web depends on nuxt ^4.4.8, @nuxt/ui ^4.10.0, and echarts. It does not depend on G6.",
+        "The Nest API is a different product from the thin local artifact API."
+      ],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "git ls-files | rg -i 'license|licence|copying'",
+        "device": "Apple M4 Max arm64, macOS 26.5.2",
+        "failure": "No license file. The app was not installed and node_modules was absent. Not forked.",
+        "network_required": false,
+        "observed": "HEAD is 976050d2d2aef2997864979c4518661487ef2563. apps/web/package.json was read."
+      },
+      "decision": "reject"
+    },
+    {
+      "id": "generative-llm-lora",
+      "name": "Generative LLM LoRA",
+      "repository_url": null,
+      "commit": null,
+      "entry_points": [],
+      "license_paths": [],
+      "license_name": null,
+      "model_revision": null,
+      "training_provenance": "User-reported 8B, 32B, and 70B LoRA recipes in configs/compute/reported_constraints.json. Not run and not an embedding encoder.",
+      "verified_functions": [],
+      "gaps": ["A generative LoRA does not replace SPECTER2 or the multilingual embedding candidate. No weights were downloaded and vllm was not stopped."],
+      "minimal_changes": [],
+      "verification_evidence": {
+        "probe_status": "not_run",
+        "command": "not run",
+        "device": "Apple M4 Max arm64, macOS 26.5.2",
+        "failure": "Out of scope for the embedding baseline. Spark was not measured.",
+        "network_required": false,
+        "observed": "No checkpoint was selected."
+      },
+      "decision": "reject"
+    }
+  ]
+}
