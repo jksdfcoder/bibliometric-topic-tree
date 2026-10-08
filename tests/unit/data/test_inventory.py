@@ -458,6 +458,23 @@ class InventoryTests(unittest.TestCase):
             self.assertFalse(result["source_ids_resolved_to_names"])
             self.assertEqual(result["tables"]["authors"]["value_rows_read"], 0)
 
+    def test_null_work_id_keeps_normalized_join_blocked(self):
+        need_arrow(self)
+        with tempfile.TemporaryDirectory() as d:
+            lake = Path(d) / "lake"
+            null_row = work(1, T1)
+            null_row["id"] = None
+            write_rows(lake / "works" / "part" / "data_0.parquet", [null_row, work(2, T2)], work_schema())
+            write_rows(lake / "works_referenced_works" / "part" / "data_0.parquet", [ref(2, T2, 8)], ref_schema())
+            write_snapshot(lake)
+            result = inspect_source(lake, Path(d) / "output")
+            self.assertFalse(result["tables"]["works"]["sample_complete"])
+            self.assertFalse(result["reference_join"]["sample_complete"])
+            self.assertFalse(result["normalized_references_allowed"])
+            self.assertEqual(result["status"], "blocked")
+            self.assertIsNone(result["source_version"])
+            self.assertIn("reference_sample_incomplete", result["missing_inputs"])
+
     def test_complete_evidence_fixes_manifest_version_not_directory_date(self):
         need_arrow(self)
         with tempfile.TemporaryDirectory() as d:
@@ -473,30 +490,64 @@ class InventoryTests(unittest.TestCase):
             write_snapshot(lake)
             output = Path(d) / "output"
             result = inspect_source(lake, output)
+            self.assertEqual(result["status"], "blocked")
+            self.assertIsNone(result["source_version"])
+            self.assertNotEqual(result["source_version"], "2025-11-11")
+            self.assertFalse(result["source_version_fixed"])
+            self.assertFalse(result["normalized_references_allowed"])
+            self.assertEqual(result["partition_role"], "unknown")
+            self.assertEqual(result["partition_role_basis"], "unverified")
+            self.assertEqual(result["reference_join"]["state"], "unproven")
+            self.assertEqual(result["reference_join"]["same_timestamp"], 3)
+            self.assertEqual(result["reference_join"]["different_timestamp"], 0)
+            self.assertEqual(result["reference_join"]["no_side_rows"], 0)
+            self.assertGreaterEqual(result["reference_join"]["repeated_cross_partition_ids"], 1)
+            self.assertTrue(result["reference_join"]["sample_complete"])
+            self.assertIn("repeated_cross_partition_id", result["missing_inputs"])
+            self.assertNotIn("reference_set_semantics", result["missing_inputs"])
+            self.assertNotIn("deletion_semantics", result["missing_inputs"])
+            self.assertNotIn("empty_side_table_semantics", result["missing_inputs"])
+            self.assertIsNone(result["coverage"]["publication_date"])
+            self.assertIsNone(result["coverage"]["references"])
+            self.assertIsNone(result["coverage"]["raw_name"])
+            self.assertIn("coverage_not_measured", result["limitations"])
+            self.assertNotIn("audit_complete_does_not_mean_coverage_complete", result["limitations"])
+            self.assertEqual(fields_by_name(result)["title"]["version_basis"], "unverified")
+            self.assertEqual(fields_by_name(result)["referenced_work_id"]["observed_columns"], ["referenced_work_id"])
+            manifest = json.loads((output / "source_manifest.json").read_text())
+            self.assertEqual(manifest["status"], "blocked")
+            self.assertEqual(manifest["data"]["source_version"], "unverified")
+            self.assertFalse(manifest["data"]["source_version_fixed"])
+            self.assertFalse(manifest["normalized_references_allowed"])
+            directories = [item for item in result["source_version_candidates"] if item["kind"] == "partition_directory"]
+            self.assertTrue(all(item["selected"] is False for item in directories))
+            snapshots = [item for item in result["source_version_candidates"] if item["kind"] == "snapshot_manifest"]
+            self.assertEqual(snapshots, [{"value": "fixture-snapshot-9", "kind": "snapshot_manifest", "selected": False}])
+
+    def test_distinct_ids_fix_manifest_version_not_directory_date(self):
+        need_arrow(self)
+        with tempfile.TemporaryDirectory() as d:
+            lake = Path(d) / "lake"
+            schema = work_schema()
+            write_rows(lake / "works" / "2020-08-21" / "data_0.parquet", [work(1, T1)], schema)
+            write_rows(lake / "works" / "2025-11-11" / "data_0.parquet", [work(2, T2)], schema)
+            write_rows(
+                lake / "works_referenced_works" / "2025-11-11" / "data_0.parquet",
+                [ref(1, T1, 9), ref(2, T2, 8)],
+                ref_schema(),
+            )
+            write_snapshot(lake)
+            output = Path(d) / "output"
+            result = inspect_source(lake, output)
             self.assertEqual(result["status"], "completed")
             self.assertEqual(result["source_version"], "fixture-snapshot-9")
             self.assertNotEqual(result["source_version"], "2025-11-11")
             self.assertTrue(result["source_version_fixed"])
             self.assertTrue(result["normalized_references_allowed"])
             self.assertEqual(result["partition_role"], "update")
-            self.assertEqual(result["partition_role_basis"], "snapshot_manifest")
             self.assertEqual(result["reference_join"]["state"], "consistent_timestamp")
-            self.assertEqual(result["reference_join"]["same_timestamp"], 3)
-            self.assertEqual(result["reference_join"]["different_timestamp"], 0)
-            self.assertEqual(result["reference_join"]["no_side_rows"], 0)
-            self.assertTrue(result["reference_join"]["sample_complete"])
+            self.assertEqual(result["reference_join"]["repeated_cross_partition_ids"], 0)
             self.assertEqual(result["missing_inputs"], [])
-            self.assertIsNone(result["coverage"]["publication_date"])
-            self.assertIsNone(result["coverage"]["references"])
-            self.assertIsNone(result["coverage"]["raw_name"])
-            self.assertIn("coverage_not_measured", result["limitations"])
-            self.assertIn("audit_complete_does_not_mean_coverage_complete", result["limitations"])
-            self.assertEqual(fields_by_name(result)["title"]["version_basis"], "fixture-snapshot-9")
-            self.assertEqual(fields_by_name(result)["referenced_work_id"]["observed_columns"], ["referenced_work_id"])
-            manifest = json.loads((output / "source_manifest.json").read_text())
-            self.assertEqual(manifest["status"], "completed")
-            self.assertEqual(manifest["data"]["source_version"], "fixture-snapshot-9")
-            self.assertTrue(manifest["data"]["source_version_fixed"])
             directories = [item for item in result["source_version_candidates"] if item["kind"] == "partition_directory"]
             self.assertTrue(all(item["selected"] is False for item in directories))
 

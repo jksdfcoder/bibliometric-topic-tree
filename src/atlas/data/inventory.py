@@ -250,17 +250,26 @@ def _decide(tables: dict, join: dict, manifests: list) -> dict:
         missing.append("reference_version_conflict")
     if join["duplicate_ids_same_partition"]:
         missing.append("duplicate_work_ids")
+    if join["repeated_cross_partition_ids"]:
+        missing.append("repeated_cross_partition_id")
     if join["sample_complete"] and not conflicts and join["no_side_rows"]:
         missing.append("reference_side_rows_unknown")
     timestamps_prove = (
         join["sample_complete"]
         and not conflicts
         and join["duplicate_ids_same_partition"] == 0
+        and join["repeated_cross_partition_ids"] == 0
         and join["no_side_rows"] == 0
         and join["work_occurrences"] > 0
         and join["same_timestamp"] == join["work_occurrences"]
     )
-    if join["sample_complete"] and not conflicts and not join["no_side_rows"] and not timestamps_prove:
+    if (
+        join["sample_complete"]
+        and not conflicts
+        and not join["no_side_rows"]
+        and not join["repeated_cross_partition_ids"]
+        and not timestamps_prove
+    ):
         missing.append("reference_version_unproven")
     fixed = not missing
     if conflicts or join["duplicate_ids_same_partition"]:
@@ -302,6 +311,7 @@ def _join_samples(work_rows: list, ref_rows: list) -> dict:
         "no_side_rows": 0,
         "cross_partition_conflicts": 0,
         "duplicate_ids_same_partition": 0,
+        "repeated_cross_partition_ids": 0,
         "work_occurrences": len(work_rows),
         "sample_complete": False,
     }
@@ -319,7 +329,7 @@ def _join_samples(work_rows: list, ref_rows: list) -> dict:
         if len(partitions) >= 2:
             tokens = {row["token"] for row in rows}
             if len(tokens) == 1 and _is_timestamp(next(iter(tokens))):
-                pass
+                counts["repeated_cross_partition_ids"] += 1
             elif any(not _is_timestamp(token) for token in tokens):
                 counts["precision_mismatch"] += 1
             else:
@@ -453,12 +463,14 @@ def _read_parquet(path: Path, table_root: Path, sample_kind: str | None, sample_
     record["sample_rows_read"] = len(raw_rows)
     partition = _partition_label(relative)
     samples = []
+    saw_null_id = False
     for row in raw_rows:
         identity = _identity(row)
         if identity is None:
+            saw_null_id = True
             continue
         samples.append({"id": identity, "token": _token(row), "partition": partition})
-    complete = record["rows"] is not None and record["rows"] <= len(raw_rows)
+    complete = record["rows"] is not None and record["rows"] <= len(raw_rows) and not saw_null_id
     return record, samples, complete
 
 

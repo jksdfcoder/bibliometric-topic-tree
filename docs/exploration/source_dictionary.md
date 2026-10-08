@@ -31,9 +31,9 @@
 
 - 侧表目录不存在，或 parquet 元数据行数为 0，都不是 `reported_empty`。空引用集必须来自该 work 修订上的显式空列表；当前没有这种证据。
 - `updated` 时间戳比 `updated_date` 更精确。只有日期相同，或一边是 timestamp、一边只是 date，都不能把两侧当成同一引用集版本。
-- 同一 work id 跨分区的 timestamp 不一致，或同一分区里同一 id 出现多次，都不能固定 `source_version`。
-- 值样本每文件最多 32 行。元数据里的 `num_rows` 可以大于样本。样本没覆盖全部行时，版本保持未固定。这是代码上限，不是这次湖的测量。
-- 只有一个根级 manifest 写明 `source_version`、`partition_role`（`update` / `full_base` / `historical_multi_version`）、`reference_set_semantics`、`deletion_semantics`、`empty_side_table_semantics`，并且 works 与 `works_referenced_works` 的全部行都读完且 timestamp 一致时，`inspect_source` 才把 `source_version_fixed` 和 `normalized_references_allowed` 设为 true。删除条数仍然不会被独立数出来。这次真实根目录没有进入该分支。
+- 同一 work id 跨分区出现，即使 `updated` timestamp 相同，也不是引用集规则的证明。manifest 里非空的删除、引用集或空侧表句子本身也不是。timestamp 不一致，或同一分区里同一 id 出现多次，同样不能固定 `source_version`。
+- 值样本每文件最多 32 行。元数据里的 `num_rows` 可以大于样本。样本没覆盖全部行，或读到的行里 work id 为空时，该文件样本不算完整，规范化连接保持阻止。这是代码上限，不是这次湖的测量。
+- 只有一个根级 manifest 写明 `source_version`、`partition_role`（`update` / `full_base` / `historical_multi_version`）、`reference_set_semantics`、`deletion_semantics`、`empty_side_table_semantics`，并且 works 与 `works_referenced_works` 的全部行都读完、没有空 work id、同一 work id 不跨分区重复、且 timestamp 一致时，`inspect_source` 才把 `source_version_fixed` 和 `normalized_references_allowed` 设为 true。删除条数仍然不会被独立数出来。这次真实根目录没有进入该分支。
 
 稳定读取方式：`atlas.data.inventory.inspect_source(root, output)`。下游只消费 `manifest.status == completed` 且 `normalized_references_allowed == true` 的运行。本 run 两者都不满足。
 
