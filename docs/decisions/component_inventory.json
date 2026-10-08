@@ -333,29 +333,18 @@
       "repository_url": "https://github.com/antvis/G6",
       "commit": "54ece372b40aa8ecbf09add9e09544979a4be10f",
       "entry_points": [
-        "packages/g6/src/registry/register.ts:register",
-        "packages/g6/src/layouts/base-layout.ts:BaseLayout.execute",
-        "packages/g6/src/runtime/graph.ts:collapseElement",
-        "packages/g6/src/runtime/graph.ts:focusElement",
-        "packages/g6/src/runtime/graph.ts:setElementVisibility",
-        "packages/g6/src/runtime/graph.ts:getElementVisibility"
+        "packages/g6/src/runtime/graph.ts:Graph"
       ],
       "license_paths": ["LICENSE"],
       "license_name": "MIT",
       "model_revision": null,
       "training_provenance": null,
       "verified_functions": [
-        "new Graph({ data: { nodes: [{ id: 'a' }] } })",
-        "register",
-        "BaseLayout",
-        "Graph.prototype.collapseElement",
-        "Graph.prototype.focusElement",
-        "Graph.prototype.setElementVisibility",
-        "Graph.prototype.getElementVisibility"
+        "new Graph({ data: { nodes: [{ id: 'a' }] } })"
       ],
       "gaps": [
-        "Publication-time radius is not a built-in layout. RadialLayout from @antv/layout is not publication time.",
-        "Prototype methods were present. collapseElement, focusElement, and setElementVisibility were not called. No browser pixels were rendered.",
+        "Publication-time radius is not a built-in layout. RadialLayout from @antv/layout is not publication time. No publication-time layout was run.",
+        "register, BaseLayout, collapseElement, focusElement, setElementVisibility, and getElementVisibility were not called. No browser pixels were rendered.",
         "packages/g6/src/index.ts points an icon font at at.alicdn.com. The data view must not depend on that CDN.",
         "npm metadata for 5.1.1 has no gitHead. The pin is this commit, whose packages/g6/package.json version is 5.1.1. The loaded package also reports 5.1.1.",
         "Spark and a mobile viewport were not measured. Package directory size was 13 MB; the npm install also pulled a shared tree of 698 packages."
@@ -369,7 +358,7 @@
         "device": "Apple M4 Max arm64, macOS 26.5.2, Node v24.15.0",
         "failure": null,
         "network_required": true,
-        "observed": "g6_pkg 5.1.1. Graph constructed. register and BaseLayout were functions. The six Graph methods above were functions on the prototype."
+        "observed": "g6_pkg 5.1.1. new Graph({ data: { nodes: [{ id: 'a' }] } }) constructed an object. register, BaseLayout, collapseElement, focusElement, setElementVisibility, and getElementVisibility were not called."
       },
       "decision": "adopt"
     },
