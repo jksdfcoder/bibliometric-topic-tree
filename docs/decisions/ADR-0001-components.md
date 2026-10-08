@@ -36,7 +36,7 @@ Device for all of these: the Apple M4 Max above.
 - Faiss: `pip install --only-binary=:all: faiss-cpu` (network required) installed 1.13.0. `IndexFlatIP(4).add/search` and `write_index`/`read_index` on four-dimensional synthetic float32 vectors. Top hit was row 0 with inner product 1.0. The index file was 93 bytes. Entry points read at the tag: `faiss/IndexFlat.h` `IndexFlatIP`, `faiss/index_io.h` `write_index` and `read_index`.
 - Vue: `npm install --ignore-scripts vue@3.5.43` (network required). `createApp` returned an application object. `version` was `3.5.43`.
 - Nuxt: same install, `nuxt@4.4.8`. `import('nuxt')` exposed `build`, `createNuxt`, and `loadNuxt`. `createNuxt` was not called and no port was opened.
-- G6: same install, `@antv/g6@5.1.1`. `new Graph({ data: { nodes: [{ id: 'a' }] } })` constructed an object. `register` and `BaseLayout` are functions. `collapseElement`, `expandElement`, `focusElement`, `setElementVisibility`, `getElementVisibility`, and `getElementData` are functions on `Graph.prototype`. Those methods were not called. `ExtensionCategory.LAYOUT` is `"layout"`.
+- G6: same install, `@antv/g6@5.1.1`. `new Graph({ data: { nodes: [{ id: 'a' }] } })` constructed an object. `register`, `BaseLayout`, collapse, focus, visibility, and the layout category were not part of the passed check.
 
 `rank_bm25` `BM25Okapi.get_scores` also ran, via `PYTHONPATH`, on the same three sentences (`0.093921`, `0.615313`, `0.0`). It is not the pin: the class has no `save`/`load`, and `pip install` of the shallow clone failed because `setup.py` runs `git describe` and this clone has no tags (`fatal: No names found, cannot describe anything`).
 
